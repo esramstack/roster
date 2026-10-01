@@ -32,7 +32,7 @@ The browser signs in with Supabase Auth and sends the user's JWT to `dsa-api`. T
 The frontend credentials are configured in `src/config.ts`:
 
 ```js
-export const SUPABASE_URL = "https://kpjynehmvmapyywjhyqj.supabase.co";
+export const SUPABASE_URL = "https://ioqvezimbrdaojbwsfbf.supabase.co";
 export const SUPABASE_ANON_KEY = "...";
 ```
 
@@ -81,9 +81,9 @@ supabase functions serve dsa-api
 ## Deploy
 
 ```powershell
-npx supabase link --project-ref kpjynehmvmapyywjhyqj
+npx supabase link --project-ref ioqvezimbrdaojbwsfbf
 npx supabase db push --linked --yes
-npx supabase functions deploy dsa-api --project-ref kpjynehmvmapyywjhyqj
+npx supabase functions deploy dsa-api --project-ref ioqvezimbrdaojbwsfbf
 ```
 
 If the first migration was already run manually in the SQL Editor, repair migration history before pushing new migrations:

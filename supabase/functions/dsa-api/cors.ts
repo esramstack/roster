@@ -38,8 +38,12 @@ function resolveOrigin(req?: Request): string {
   }
 
   // Allow this project's Vercel production + preview URLs
-  // e.g. msk-duty-roaster-beta.vercel.app, msk-duty-roaster-1apzckr69-....vercel.app
+  // e.g. msk-duty-roaster-beta.vercel.app, roster-brown-eta.vercel.app,
+  // roster-ltmbzii5z-esramgibran-3487s-projects.vercel.app
   if (/^https:\/\/msk-duty-roaster([a-z0-9-]+)?\.vercel\.app$/i.test(requestOrigin)) {
+    return requestOrigin;
+  }
+  if (/^https:\/\/roster(-[a-z0-9-]+)?\.vercel\.app$/i.test(requestOrigin)) {
     return requestOrigin;
   }
 

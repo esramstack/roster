@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 
-const SUPABASE_URL = "https://kpjynehmvmapyywjhyqj.supabase.co";
+const SUPABASE_URL = "https://ioqvezimbrdaojbwsfbf.supabase.co";
 
 export default defineConfig({
   server: {
