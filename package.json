@@ -6,13 +6,16 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc && vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "vitest run",
+    "dev:mock": "VITE_MOCK_API=1 vite --host 0.0.0.0"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest"
   },
   "devDependencies": {
     "typescript": "latest",
-    "vite": "latest"
+    "vite": "latest",
+    "vitest": "^3.2.7"
   }
 }

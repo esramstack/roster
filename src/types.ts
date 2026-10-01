@@ -1,12 +1,12 @@
 import type { User } from "@supabase/supabase-js";
 
-export type AppTab = "dash" | "roster" | "live" | "settings" | "hist";
-export type RosterTab = "patient" | "preop" | "teams" | "postop";
-export type SettingsTab = "staff" | "rooms" | "procedures" | "checklist" | "clinic";
-export type DashboardDetail = "hidden" | "rooms" | "active" | "done" | "grafts";
+export type AppTab = "dash" | "roster" | "live" | "rooms" | "hist" | "settings";
+export type RosterTab = "patient" | "assessment" | "preop" | "teams" | "procedure" | "postop";
+export type SettingsTab = "staff" | "rooms" | "procRooms" | "procedures" | "checklist" | "clinic";
 export type CaseStatus = "scheduled" | "in-progress" | "completed";
 export type ProcedureRoomStatus = "available" | "occupied" | "completed";
 export type Phase = "registration" | "preOp" | "anaesthesia" | "extraction" | "placing" | "dressing" | "postOp";
+export type LivePhase = "anaesthesia" | "extraction" | "placing" | "dressing";
 
 export interface Patient {
   name: string;
@@ -34,9 +34,17 @@ export interface PreOp {
   [key: string]: string | boolean | undefined;
 }
 
+/**
+ * A procedural phase.
+ * `startedAt` / `endedAt` (ISO) are the source of truth for timers.
+ * `start` / `end` ("HH:MM") are kept in sync for backward compatibility with
+ * rows written before timestamps existed.
+ */
 export interface ProcedurePhaseTime {
   start: string;
   end: string;
+  startedAt?: string;
+  endedAt?: string;
 }
 
 export interface ExtractionProcedure extends ProcedurePhaseTime {
@@ -82,8 +90,17 @@ export interface CompletedCaseArchive {
   roomKey: string;
   roomName: string;
   dischargedAt: string;
+  /** ISO timestamp of discharge (added in the redesign; older entries only have `dischargedAt` HH:MM). */
+  dischargedAtIso?: string;
   record: CaseRecord;
 }
+
+export type ProcedureRoomPatient = Omit<Patient, "medications"> & {
+  /** ISO timestamp the procedure started in this room. */
+  startedAt?: string;
+  /** ISO timestamp the procedure was completed. */
+  endedAt?: string;
+};
 
 export interface ProcedureQueueItem {
   patient: Omit<Patient, "medications">;
@@ -93,12 +110,19 @@ export interface ProcedureQueueItem {
 }
 
 export interface ProcedureRoom {
-  patient: Omit<Patient, "medications">;
+  patient: ProcedureRoomPatient;
   assignee: string;
   procedure: string;
   notes: string;
   status: ProcedureRoomStatus;
   queue: ProcedureQueueItem[];
+}
+
+export interface CompletedProcedureArchive {
+  roomKey: string;
+  roomName: string;
+  clearedAt: string;
+  room: Omit<ProcedureRoom, "queue">;
 }
 
 export interface ChecklistItem {
@@ -112,6 +136,7 @@ export interface AppConfig {
   rooms: string[];
   roomLeads: string[];
   completedCases: CompletedCaseArchive[];
+  completedProcedureRooms?: CompletedProcedureArchive[];
   procedures: string[];
   checks: ChecklistItem[];
   procRooms: string[];
@@ -138,30 +163,31 @@ export interface SessionPayload {
 export interface LoadedSession extends SessionPayload {
   id?: string;
   full?: boolean;
+  summary?: { caseCount: number; doneCount: number; grafts: number };
 }
 
 export interface HistoryResponse {
   sessions: LoadedSession[];
 }
 
+export type SaveStatus = "idle" | "dirty" | "saving" | "saved" | "error" | "offline";
+
 export interface AppState {
   curUser: User | null;
   currentTab: AppTab;
   selectedCase: string;
   selectedRosterTab: RosterTab;
-  dashboardDetail: DashboardDetail;
+  selectedProcRoom: string;
   cfgTab: SettingsTab;
-  roomModalOpen: boolean;
-  saveTimer: number | null;
   loading: boolean;
   saving: boolean;
-  saveStatus: "idle" | "dirty" | "saving" | "saved" | "error";
+  saveStatus: SaveStatus;
   saveError: string;
+  lastSavedAt: number;
   historyRows: LoadedSession[];
-  historyDetailDate: string;
   historyLoadedAt: number;
   historyLoading: boolean;
-  liveOpenCases: Record<string, boolean>;
+  historyError: string;
   cc: number;
   sessionDate: string;
   leadName: string;
@@ -169,5 +195,3 @@ export interface AppState {
   PR: Record<string, ProcedureRoom>;
   cfg: AppConfig;
 }
-
-export type StatusView = ["done" | "active" | "scheduled", string];
